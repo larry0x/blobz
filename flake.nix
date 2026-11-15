@@ -40,7 +40,7 @@
         "clippy.toml"
         "justfile"
         "rustfmt.toml"
-        "taplo.toml"
+        "tombi.toml"
       ];
     in
     {
