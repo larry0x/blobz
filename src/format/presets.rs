@@ -71,6 +71,12 @@ macro_rules! presets {
     };
 }
 
+/// An ISO media file with an MP4 brand. Apple and some encoders brand an MP4
+/// `M4V `, which `infer` checks apart from the others.
+fn is_mp4(head: &[u8]) -> bool {
+    infer::video::is_mp4(head) || infer::video::is_m4v(head)
+}
+
 presets! {
     /// JPEG, stored as `.jpg`.
     Jpeg, "jpg", "image/jpeg", infer::image::is_jpeg;
@@ -83,7 +89,7 @@ presets! {
     /// WebM. The signature needs more than 256 bytes.
     Webm, "webm", "video/webm", infer::video::is_webm;
     /// MP4: an ISO media file with an MP4 brand.
-    Mp4, "mp4", "video/mp4", infer::video::is_mp4;
+    Mp4, "mp4", "video/mp4", is_mp4;
     /// QuickTime. Phones write it under an `.mp4` name, but its `ftyp` brand
     /// is `qt  `, so it is a format of its own.
     Mov, "mov", "video/quicktime", infer::video::is_mov;
@@ -196,7 +202,7 @@ mod tests {
     #[test]
     fn quicktime_and_mp4_are_told_apart_by_the_brand() {
         assert_eq!(identify(&ftyp(b"qt  ")), Some("mov"));
-        for brand in [b"isom", b"mp41", b"mp42", b"avc1", b"iso5"] {
+        for brand in [b"isom", b"mp41", b"mp42", b"avc1", b"iso5", b"M4V "] {
             assert_eq!(identify(&ftyp(brand)), Some("mp4"));
         }
         // A QuickTime file from before `ftyp`: it opens with a `moov` box.
